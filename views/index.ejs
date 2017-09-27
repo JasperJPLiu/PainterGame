@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css'/>
+    <script src="/javascripts/jquery-3.2.1.min.js"></script>
+
+    <!--Import Google Icon Font-->
+    <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!--Import materialize.css-->
+    <link type="text/css" rel="stylesheet" href="stylesheets/materialize.min.css" media="screen,projection"/>
+
+    <!--Let browser know website is optimized for mobile-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+</head>
+<body>
+<script type="text/javascript" src="javascripts/materialize.min.js"></script>
+<h1><%= title %></h1>
+<p>Welcome to <%= title %></p>
+<p id="redPoint" hidden>Red line head: </p>
+<p id="testPoint" hidden>Item point: </p>
+<canvas id="mainCan" width="800" height="300" class="main-canvas"></canvas>
+</body>
+<script type="text/javascript">
+
+    var direction_1 = 0;
+    var direction_2 = 0;
+    var line_x_1 = 10;
+    var line_y_1 = 10;
+    var line_w_1 = 5;
+    var line_w_2 = 5;
+    var line_x_2 = 785;
+    var line_y_2 = 285;
+    var fast_1 = 30;
+    var fast_2 = 30;
+    var game_over = 0;
+    var t_1 = 0;
+    var t_2 = 0;
+
+    function testbtn() {
+        if (game_over == 1) {
+            game_over = 0;
+            autowalk_1();
+        }
+    }
+
+    $(function () {
+
+        var c = document.getElementById("mainCan");
+        var cxt_1 = c.getContext("2d");
+        var cxt_2 = c.getContext("2d");
+        cxt_1.fillStyle = "#ff0000";
+        cxt_1.fillRect(line_x_1, line_y_1, line_w_1, line_w_1);
+        cxt_2.fillStyle = "#0000ff";
+        cxt_2.fillRect(line_x_2, line_y_2, line_w_2, line_w_2);
+        autowalk_1();
+        autowalk_2();
+        showItem();
+    })
+
+    $(document).on("keydown", function (e) {
+        var m_e = e || window.event;
+        var keycode = m_e.which;
+        switch (keycode) {
+            case 38:
+                fup();
+                break;
+            case 40:
+                fdown();
+                break;
+            case 37:
+                fleft();
+                break;
+            case 39:
+                fright();
+                break;
+            case 87:
+                kup();
+                break;
+            case 83:
+                kdown();
+                break;
+            case 65:
+                kleft();
+                break;
+            case 68:
+                kright();
+                break;
+            default:
+                break;
+        }
+    })
+
+    function fup() {
+        if (direction_1 != 2)
+            direction_1 = 1;
+    }
+
+    function fright() {
+        if (direction_1 != 4)
+            direction_1 = 3;
+    }
+
+    function fleft() {
+        if (direction_1 != 3)
+            direction_1 = 4;
+    }
+
+    function fdown() {
+        if (direction_1 != 1)
+            direction_1 = 2;
+    }
+
+    function kup() {
+        if (direction_2 != 2)
+            direction_2 = 1;
+    }
+
+    function kright() {
+        if (direction_2 != 4)
+            direction_2 = 3;
+    }
+
+    function kleft() {
+        if (direction_2 != 3)
+            direction_2 = 4;
+    }
+
+    function kdown() {
+        if (direction_2 != 1)
+            direction_2 = 2;
+    }
+
+
+    var a_walk;
+    function autowalk_1() {
+        if (game_over == 1)
+            return;
+        var c = document.getElementById("mainCan");
+        var cxt = c.getContext("2d");
+        cxt.fillStyle = "#ff0000";
+        switch (direction_1) {
+            case 1:
+                line_y_1 -= line_w_1;
+                break;
+            case 2:
+                line_y_1 += line_w_1;
+                break;
+            case 3:
+                line_x_1 += line_w_1;
+                break;
+            case 4:
+                line_x_1 -= line_w_1;
+                break;
+            default:
+                line_x_1 += line_w_1;
+                break;
+        }
+        cxt.fillRect(line_x_1, line_y_1, line_w_1, line_w_1)
+        var flag = toutch_event(line_x_1, line_y_1, direction_1, 1);
+//        $("#redPoint").text("Red line head: (" + line_x_1 + "," + line_y_1 + ")");
+        if (flag == 0)
+            a_walk = setTimeout("autowalk_1()", fast_1);
+        else {
+            setTimeout("alert('Player Red die')", 20);
+            game_over = 1;
+        }
+    }
+
+    function autowalk_2() {
+        if (game_over == 1)
+            return;
+        var c = document.getElementById("mainCan");
+        var cxt = c.getContext("2d");
+        cxt.fillStyle = "#0000ff";
+        switch (direction_2) {
+            case 1:
+                line_y_2 -= line_w_2;
+                break;
+            case 2:
+                line_y_2 += line_w_2;
+                break;
+            case 3:
+                line_x_2 += line_w_2;
+                break;
+            case 4:
+                line_x_2 -= line_w_2;
+                break;
+            default:
+                line_x_2 -= line_w_2;
+                break;
+        }
+        cxt.fillRect(line_x_2, line_y_2, line_w_2, line_w_2)
+        var flag = toutch_event(line_x_2, line_y_2, direction_2, 2);
+        if (flag == 0)
+            a_walk = setTimeout("autowalk_2()", fast_2);
+        else {
+            setTimeout("alert('Player Blue die')", 20);
+            game_over = 1;
+        }
+    }
+
+    function check_event(x, y, i) {
+        if (x <= 0 || x >= 800 || y <= 0 || y >= 300)
+            return 1;
+        var c = document.getElementById("mainCan");
+        var cxt = c.getContext("2d");
+        var imgdata = cxt.getImageData(x, y, 1, 1);
+        var red = imgdata.data[0];
+        var green = imgdata.data[1];
+        var blue = imgdata.data[2];
+        var c = document.getElementById("mainCan")
+//        var xt1 = c.getContext("2d");
+//        xt1.fillStyle = "#000000";
+//        xt1.fillRect(x, y, 1, 1);
+        if (i == 1)
+            if (blue == 255 && t_1 == 0)
+                return 1;
+        if (i == 2)
+            if (red == 255 && t_2 == 0)
+                return 1;
+        if (green == 255) {
+            if (i == 1 && fast_1 >= 5)
+                fast_1 -= 3;
+            if (i == 2 && fast_2 >= 5)
+                fast_2 -= 3;
+            return 2;
+        }
+
+        if (green == 204) {
+            if (i == 1)
+                line_w_1 += 5;
+            if (i == 2)
+                line_w_2 += 5;
+            return 2;
+        }
+        if (green == 19) {
+            if (i == 1) {
+                t_1 = 1;
+                var t = setTimeout("setT1()", 3000);
+            } else {
+                t_2 = 1;
+                var t = setTimeout("setT2()", 3000);
+            }
+            return 2;
+        }
+        return 0;
+    }
+
+    function toutch_event(x, y, d, i) {
+        var cx;
+        var cy;
+        var dx;
+        var dy;
+        if (i == 1) {
+            switch (d) {
+                case 1:
+                    cx = x;
+                    cy = y - 1;
+                    dx = cx + line_w_1 - 1;
+                    dy = cy;
+                    break;
+                case 2:
+                    cx = x;
+                    cy = y + line_w_1 + 1;
+                    dx = cx + line_w_1 - 1;
+                    dy = cy;
+                    break;
+                case 3:
+                    cx = x + line_w_1 + 1;
+                    cy = y;
+                    dx = cx;
+                    dy = cy + line_w_1 - 1;
+                    break;
+                case 4:
+                    cx = x - 1;
+                    cy = y;
+                    dx = cx;
+                    dy = cy + line_w_1 - 1
+                    break;
+            }
+        }
+        if (i == 2) {
+            switch (d) {
+                case 1:
+                    cx = x;
+                    cy = y - 1;
+                    dx = cx + line_w_2 - 1;
+                    dy = cy;
+                    break;
+                case 2:
+                    cx = x;
+                    cy = y + line_w_2 + 1;
+                    dx = cx + line_w_2 - 1;
+                    dy = cy;
+                    break;
+                case 3:
+                    cx = x + line_w_2 + 1;
+                    cy = y;
+                    dx = cx;
+                    dy = cy + line_w_2 - 1;
+                    break;
+                case 4:
+                    cx = x - 1;
+                    cy = y;
+                    dx = cx;
+                    dy = cy + line_w_2 - 1
+                    break;
+            }
+        }
+        var flag = 0;
+        for (var k = cx; k <= dx; k++) {
+            for (var j = cy; j <= dy; j++) {
+                if (flag == 0)
+                    flag = check_event(k, j, i);
+            }
+        }
+        if (flag == 2)
+            flag = 0;
+        return flag;
+    }
+
+    function setT1() {
+        t_1 = 0;
+    }
+    function setT2() {
+        t_2 = 0;
+    }
+
+    function showItem() {
+        var c = document.getElementById("mainCan");
+        var cxt = c.getContext("2d");
+        var a = Math.floor(Math.random() * 3);
+        var flag = 0;
+        switch (a) {
+            case 0:
+                cxt.fillStyle = "#00ff00";
+                break;
+            case 1:
+                cxt.fillStyle = "#00cccc";
+                break;
+            case 2:
+                cxt.fillStyle = "#B413AE";
+                break;
+            default:
+                cxt.fillStyle = "#000000";
+                break;
+        }
+        while (flag == 0) {
+            var random_x = Math.floor(Math.random() * 160) * 5;
+            var random_y = Math.floor(Math.random() * 60) * 5;
+            var imgdata = cxt.getImageData(random_x, random_y, 1, 1);
+            var red = imgdata.data[0];
+            var green = imgdata.data[1];
+            var blue = imgdata.data[2];
+            if (red == 0 && green == 0 && blue == 0)
+                flag = 1;
+        }
+        cxt.fillRect(random_x, random_y, 5, 5);
+        $("#testPoint").text($("#testPoint").text() + " (" + random_x + "," + random_y + ") ")
+        var t = setTimeout("showItem()", 5000);
+    }
+
+</script>
+</html>
